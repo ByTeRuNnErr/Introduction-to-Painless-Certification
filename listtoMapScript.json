@@ -1,0 +1,47 @@
+ POST _scripts/painless/_execute
+{
+  "script": {
+    "lang": "painless",
+    "source": """
+    Map listtoMap(List nestedObjects, String keyField, String valueField) {
+    Map entries = new HashMap();
+    for (nestedObject in nestedObjects){
+      entries.put(
+      nestedObject.getOrDefault(keyField, "Unknow_key"),
+      nestedObject.getOrDefault(valueField, "Unkwon_value")
+      )
+    }
+    return entries;
+    }
+    return listtoMap(params.configItems, params.keyField, params.valueField);
+    """, 
+    "params": {
+      "keyField" : "resourceID",
+      "valueField" : "type",
+      "configItems": [
+        {
+          "resourceID": "foo0",
+          "type": "bar0"
+        },
+        {
+          "resourceID": "foo1",
+          "type": "bar1"
+        },
+        {
+          "resourceID": "foo2",
+          "type": "bar2"
+        },
+        {
+          "type": "bar3"
+        },
+        {
+          "resourceID": "foo4"
+        }
+      ]
+    }
+  }
+}
+
+
+
+}
