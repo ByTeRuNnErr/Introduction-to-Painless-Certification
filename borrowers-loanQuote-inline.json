@@ -1,0 +1,57 @@
+PUT borrowers/_doc/1
+{
+  "id": "001",
+  "name": "Joe",
+  "credit_rating": 450
+}
+
+PUT borrowers/_doc/2
+{
+  "id": "002",
+  "name": "marry",
+  "credit_rating": 650
+}
+
+GET borrowers/_search
+{
+  "_source": false,
+  "fields": [
+    "name",
+    "id",
+    "loan_quote.loan_id",
+    "loan_quote.interest_rate",
+    "loan_quote.risk_rating"
+    ],
+    "runtime_mappings": {
+      "loan_quote": {
+        "type": "composite",
+        "script": {
+          "lang": "painless",
+          "source": """
+            String loanId = doc['name.keyword'].value + "-" + doc["id.keyword"].value;
+            if (doc['credit_rating'].value > params.threshold) {
+              emit(["loan_id": loanId, 'risk_rating': 'Good', 'interest_rate': params.good_interest_rate]);
+            } else {
+              emit(["loan_id": loanId, 'risk_rating': 'Poor', 'interest_rate': params.poor_interest_rate]);
+            }
+          """,
+          "params": {
+            "threshold": 500,
+            "good_interest_rate": 0.1,
+            "poor_interest_rate": 0.15
+          }
+        },
+        "fields": {
+          "loan_id": {
+            "type": "keyword" 
+            },
+          "interest_rate": {
+            "type": "double"
+          },
+          "risk_rating": {
+            "type": "keyword"
+          }
+        }
+      }
+    }
+}
